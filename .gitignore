@@ -1,0 +1,13 @@
+.DS_Store
+
+node_modules/
+
+dist/
+*.tgz
+*.tsbuildinfo
+
+coverage/
+*.log
+
+.idea/
+.vscode/

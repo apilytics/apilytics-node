@@ -1,0 +1,43 @@
+{
+  "name": "@apilytics/express",
+  "version": "1.0.0",
+  "description": "Apilytics for Express - Easy API analytics for Express backends",
+  "author": "Apilytics <hello@apilytics.io>",
+  "license": "MIT",
+  "homepage": "https://apilytics.io",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/apilytics/apilytics-node.git",
+    "directory": "packages/core"
+  },
+  "bugs": "https://github.com/apilytics/apilytics-node/issues",
+  "keywords": [
+    "api",
+    "backend",
+    "analytics",
+    "monitoring",
+    "middleware"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "directories": {
+    "lib": "dist"
+  },
+  "scripts": {
+    "build": "yarn clean && tsc",
+    "clean": "rm -rf dist/ tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@apilytics/core": "1.0.0",
+    "express": "*"
+  },
+  "devDependencies": {
+    "@types/express": "*"
+  },
+  "engines": {
+    "node": ">=12.0.0"
+  }
+}
