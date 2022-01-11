@@ -8,6 +8,8 @@
 [![node versions](https://img.shields.io/node/v/@apilytics/core)](#what-nodejs-versions-does-the-package-work-with)
 [![license](https://img.shields.io/npm/l/@apilytics/core)](https://github.com/apilytics/apilytics-node/blob/master/packages/core/LICENSE)
 
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+
 Make sure to check out our out-of-the-box middleware packages first:
 
 - [**Express**](../express/README.md#installation)

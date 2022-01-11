@@ -8,6 +8,8 @@
 [![node versions](https://img.shields.io/node/v/@apilytics/express)](#what-nodejs-versions-does-the-package-work-with)
 [![license](https://img.shields.io/npm/l/@apilytics/express)](https://github.com/apilytics/apilytics-node/blob/master/packages/express/LICENSE)
 
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+
 ## Installation
 
 1. Sign up and get your API key from https://apilytics.io - we offer a completely free trial with no credit card required!
