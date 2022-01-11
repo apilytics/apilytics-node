@@ -14,10 +14,10 @@ Apilytics is a service that lets you analyze operational, performance and securi
 
 1. Sign up and get your API key from https://apilytics.io - we offer a completely free trial with no credit card required!
 
-2. Check installation directions for your specific framework:
+2. Continue with installation directions for your specific framework:
 
-- [**Express**](./packages/express/README.md#installation)
+- [**Express** (`@apilytics/express`)](./packages/express/README.md#installation)
 
-- [**Next.js**](./packages/next/README.md#installation)
+- [**Next.js** (`@apilytics/next`)](./packages/next/README.md#installation)
 
-- [**Other Node.js Frameworks**](./packages/core/README.md#installation)
+- [**Other Node.js Frameworks** (`@apilytics/core`)](./packages/core/README.md#installation)

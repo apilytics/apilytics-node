@@ -12,9 +12,9 @@ Apilytics is a service that lets you analyze operational, performance and securi
 
 Make sure to check out our out-of-the-box middleware packages first:
 
-- [**Express**](../express/README.md#installation)
+- [**Express** (`@apilytics/express`)](../express/README.md#installation)
 
-- [**Next.js**](../next/README.md#installation)
+- [**Next.js** (`@apilytics/next`)](../next/README.md#installation)
 
 ## Installation
 
