@@ -12,7 +12,6 @@ export const apilyticsMiddleware = (
 
   return (req: Request, res: Response, next: NextFunction): void => {
     const timer = milliSecondTimer();
-
     res.on('finish', () => {
       sendApilyticsMetrics({
         apiKey,
@@ -22,7 +21,6 @@ export const apilyticsMiddleware = (
         timeMillis: timer(),
       });
     });
-
     next();
   };
 };
