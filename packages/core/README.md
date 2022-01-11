@@ -8,11 +8,13 @@
 [![node versions](https://img.shields.io/node/v/@apilytics/core)](#what-nodejs-versions-does-the-package-work-with)
 [![license](https://img.shields.io/npm/l/@apilytics/core)](https://github.com/apilytics/apilytics-node/blob/master/packages/core/LICENSE)
 
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+
 Make sure to check out our out-of-the-box middleware packages first:
 
-- [**Express**](../express/README.md#installation)
+- [**Express** (`@apilytics/express`)](../express/README.md#installation)
 
-- [**Next.js**](../next/README.md#installation)
+- [**Next.js** (`@apilytics/next`)](../next/README.md#installation)
 
 ## Installation
 
@@ -28,24 +30,28 @@ npm install @apilytics/core
 3. Set your api key and create a middleware which measures the execution time and sends the metrics:
 *A good practice is to securely store the API key as an environment variable.  
 You can leave the env variable unset in e.g. development and test environments,
-the middleware will be automatically disabled if the key is `undefined`.*
+and make the middleware be disabled if the key is `undefined`.*
 
 `my-apilytics-middleware.js`:
 ```javascript
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 
-const myApilyticsMiddleware = (/* ... */) => {
+const myApilyticsMiddleware = async (req, handler) => {
+  const apiKey = process.env.APILYTICS_API_KEY;
+  if (!apiKey) {
+    return await handler(req);
+  }
+
   const timer = milliSecondTimer();
-
-  // Call/await the request handler that the middleware wraps here.
-
+  const res = await handler(req);
   sendApilyticsMetrics({
-    apiKey: process.env.APILYTICS_API_KEY,
+    apiKey,
     path: req.path,
     method: req.method,
     statusCode: res.statusCode,
     timeMillis: timer(),
   });
+  return res;
 };
 ```
 

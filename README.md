@@ -6,14 +6,18 @@
 [![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
 [![license](https://img.shields.io/badge/license-MIT-green)](https://github.com/apilytics/apilytics-node/blob/master/LICENSE)
 
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+
+<img src="https://www.apilytics.io/mock-ups/time-frame.gif" alt="Apilytics dashboard animation" width="600" height="300" />
+
 ## Installation
 
 1. Sign up and get your API key from https://apilytics.io - we offer a completely free trial with no credit card required!
 
-2. Check installation directions for your specific framework:
+2. Continue with installation directions for your specific framework:
 
-- [**Express**](./packages/express/README.md#installation)
+- [**Express** (`@apilytics/express`)](./packages/express/README.md#installation)
 
-- [**Next.js**](./packages/next/README.md#installation)
+- [**Next.js** (`@apilytics/next`)](./packages/next/README.md#installation)
 
-- [**Other Node.js Frameworks**](./packages/core/README.md#installation)
+- [**Other Node.js Frameworks** (`@apilytics/core`)](./packages/core/README.md#installation)
