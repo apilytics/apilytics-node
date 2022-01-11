@@ -28,24 +28,28 @@ npm install @apilytics/core
 3. Set your api key and create a middleware which measures the execution time and sends the metrics:
 *A good practice is to securely store the API key as an environment variable.  
 You can leave the env variable unset in e.g. development and test environments,
-the middleware will be automatically disabled if the key is `undefined`.*
+and make the middleware be disabled if the key is `undefined`.*
 
 `my-apilytics-middleware.js`:
 ```javascript
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 
-const myApilyticsMiddleware = (/* ... */) => {
+const myApilyticsMiddleware = async (req, handler) => {
+  const apiKey = process.env.APILYTICS_API_KEY;
+  if (!apiKey) {
+    return await handler(req);
+  }
+
   const timer = milliSecondTimer();
-
-  // Call/await the request handler that the middleware wraps here.
-
+  const res = await handler(req);
   sendApilyticsMetrics({
-    apiKey: process.env.APILYTICS_API_KEY,
+    apiKey,
     path: req.path,
     method: req.method,
     statusCode: res.statusCode,
     timeMillis: timer(),
   });
+  return res;
 };
 ```
 
