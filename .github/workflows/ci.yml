@@ -1,0 +1,100 @@
+name: "CI"
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  commits:
+    name: "Commits"
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: "Check commits of the PR branch"
+        run: ./.github/check_commits.sh
+
+  linters:
+    name: "Linters"
+    needs: commits
+    if: ${{ !failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+
+      - name: "Set up Node"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'yarn'
+
+      - name: "Install dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Run linters"
+        run: yarn lint
+
+  build:
+    name: "Build"
+    needs: commits
+    if: ${{ !failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+
+      - name: "Set up Node"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'yarn'
+
+      - name: "Install dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Build the sources"
+        run: yarn build
+
+  tests:
+    name: "Tests"
+    if: ${{ !failure() }}
+    needs: [linters, build]
+    strategy:
+      fail-fast: true
+      matrix:
+        node-version: ['12', '14', '16', '17']
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+
+      - name: "Set up Node ${{ matrix.node-version }}"
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: "Install dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Run type-checking"
+        run: yarn type-check
+
+      - name: "Run tests"
+        run: yarn test:cov
+
+      - name: "Upload coverage"
+        if: matrix.node-version == '12'
+        uses: codecov/codecov-action@f32b3a3741e1053eb607407145bc9619351dc93b  # v2.1.0
