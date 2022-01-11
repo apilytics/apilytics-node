@@ -1,6 +1,5 @@
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
-import type { NextFunction, Request, Response } from 'express';
-import type { RequestHandler } from 'express-serve-static-core';
+import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 export const apilyticsMiddleware = (
   apiKey: string | undefined,
