@@ -8,7 +8,7 @@
 [![node versions](https://img.shields.io/node/v/@apilytics/next)](#what-nodejs-versions-does-the-package-work-with)
 [![license](https://img.shields.io/npm/l/@apilytics/next)](https://github.com/apilytics/apilytics-node/blob/master/packages/next/LICENSE)
 
-Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs easily.
 
 ## Installation
 
@@ -21,10 +21,10 @@ yarn add @apilytics/next
 npm install @apilytics/next
 ```
 
-3. Enable the middleware and set your API key:  
-*A good practice is to securely store the API key as an environment variable.  
-You can leave the env variable unset in e.g. development and test environments,
-the middleware will be automatically disabled if the key is `undefined`.*
+3. Enable the middleware and set your API key:\
+  _A good practice is to securely store the API key as an environment variable.
+  You can leave the env variable unset in e.g. development and test environments,
+  the middleware will be automatically disabled if the key is `undefined`._
 
 `pages/api/my-route.js`:
 ```javascript
