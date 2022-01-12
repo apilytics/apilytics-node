@@ -8,7 +8,7 @@
 [![node versions](https://img.shields.io/node/v/@apilytics/core)](#what-nodejs-versions-does-the-package-work-with)
 [![license](https://img.shields.io/npm/l/@apilytics/core)](https://github.com/apilytics/apilytics-node/blob/master/packages/core/LICENSE)
 
-Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs without infrastructure-level logging.
+Apilytics is a service that lets you analyze operational, performance and security metrics from your APIs easily.
 
 Make sure to check out our out-of-the-box middleware packages first:
 
@@ -27,10 +27,10 @@ yarn add @apilytics/core
 npm install @apilytics/core
 ```
 
-3. Set your api key and create a middleware which measures the execution time and sends the metrics:
-*A good practice is to securely store the API key as an environment variable.  
-You can leave the env variable unset in e.g. development and test environments,
-and make the middleware be disabled if the key is `undefined`.*
+3. Set your api key and create a middleware which measures the execution time and sends the metrics:\
+  _A good practice is to securely store the API key as an environment variable.
+  You can leave the env variable unset in e.g. development and test environments,
+  and make the middleware be disabled if the key is `undefined`._
 
 `my-apilytics-middleware.js`:
 ```javascript
@@ -60,7 +60,7 @@ const myApilyticsMiddleware = async (req, handler) => {
 ### Does the middleware slow down my backend?
 
 - No. The middleware does all of its requests to the Apilytics API in the background, by using
-  promises without awaiting them, so it will not slow down your normal request handling. 
+  promises without awaiting them, so it will not slow down your normal request handling.
 
 ### What 3rd party dependencies does `@apilytics/core` have?
 
