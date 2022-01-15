@@ -4,7 +4,6 @@
     "packages/*"
   ],
   "scripts": {
-    "prebuild": "yarn --cwd=packages/core build",
     "build": "for dir in packages/*; do echo \"$dir\" && yarn --cwd=\"$dir\" build; done",
     "clean": "for dir in packages/*; do echo \"$dir\" && yarn --cwd=\"$dir\" clean; done",
     "format": "prettier --write '**/*.{ts,js,json}' && eslint --fix --max-warnings=0 --ext=.ts,.js .",
@@ -12,7 +11,7 @@
     "type-check": "yarn tsc --noEmit",
     "test": "jest --verbose",
     "test:cov": "yarn test --coverage",
-    "postinstall": "yarn prebuild"
+    "postinstall": "yarn --cwd=packages/core build"
   },
   "devDependencies": {
     "@types/jest": "27.4.0",
