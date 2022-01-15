@@ -1,6 +1,8 @@
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 
+const NEXT_VERSION = require('next/package.json').version;
+
 export const withApilytics = <T>(
   handler: NextApiHandler<T>,
   apiKey: string | undefined,
@@ -28,6 +30,8 @@ export const withApilytics = <T>(
         method: req.method ?? '',
         statusCode,
         timeMillis: timer(),
+        apilyticsIntegration: 'apilytics-node-next',
+        integratedLibrary: `next/${NEXT_VERSION}`,
       });
     }
   };
