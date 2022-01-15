@@ -16,8 +16,8 @@ Apilytics is a service that lets you analyze operational, performance and securi
 
 2. Continue with installation directions for your specific framework:
 
-- [**Express** (`@apilytics/express`)](./packages/express/README.md#installation)
+- [**Express** (`@apilytics/express`)](./packages/express#readme)
 
-- [**Next.js** (`@apilytics/next`)](./packages/next/README.md#installation)
+- [**Next.js** (`@apilytics/next`)](./packages/next#readme)
 
-- [**Other Node.js Frameworks** (`@apilytics/core`)](./packages/core/README.md#installation)
+- [**Other Node.js Frameworks** (`@apilytics/core`)](./packages/core#readme)
