@@ -1,0 +1,71 @@
+name: "CD"
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: "Type of release?"
+        required: true
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    name: "Release"
+    if: ${{ github.ref == 'refs/heads/master' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout code"
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GH_PAT }}
+
+      - name: "Set up Node"
+        uses: actions/setup-node@v2
+        with:
+          node-version: '12'
+          cache: 'yarn'
+
+      - name: "Install dependencies"
+        run: yarn install --frozen-lockfile
+
+      - name: "Build the sources"
+        run: yarn build
+
+      - name: "Publish to npm"
+        id: publish
+        run: |
+          yarn publish:all ${{ github.event.inputs.release-type }}
+          echo "::set-output name=version::$(node --print 'require("./lerna.json").version')"
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: "Update the changelog"
+        # Find the first line that starts with `###` or `## [<number>` from the CHANGELOG and insert the new version header before it.
+        run: |
+          current_date="$(date -u '+%Y-%m-%d')"
+          sed -i "0,/^\(###\|## *\[[0-9]\).*/{s//## [${{ steps.publish.outputs.version }}] - ${current_date}\n\n&/}" CHANGELOG.md
+
+      - name: "Extract version's changelog for release notes"
+        # 1. Find the lines between the first `## [<number>` and the second `## [<number>`.
+        # 2. Remove all leading and trailing newlines from the output.
+        run: sed '1,/^## *\[[0-9]/d;/^## *\[[0-9]/Q' CHANGELOG.md | sed -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' > release_notes.txt
+
+      - name: "Commit and tag the changes"
+        uses: EndBug/add-and-commit@8c12ff729a98cfbcd3fe38b49f55eceb98a5ec02  # v7.5.0
+        with:
+          add: '["lerna.json", "*package.json", "CHANGELOG.md"]'
+          message: 'Release ${{ steps.publish.outputs.version }}'
+          tag: 'v${{ steps.publish.outputs.version }} --annotate --file /dev/null'
+          default_author: github_actions
+          pathspec_error_handling: exitImmediately
+
+      - name: "Create a GitHub release"
+        uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
+        with:
+          tag_name: v${{ steps.publish.outputs.version }}
+          name: v${{ steps.publish.outputs.version }}
+          body_path: release_notes.txt
