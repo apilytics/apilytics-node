@@ -1,5 +1,4 @@
 import https from 'https';
-import process from 'process';
 
 interface Params {
   apiKey: string;
