@@ -39,6 +39,5 @@
   },
   "engines": {
     "node": ">=12.0.0"
-  },
-  "gitHead": "d83199fe1aaa931a7dcf4c12f6f67ef0083cbecc"
+  }
 }
