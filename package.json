@@ -6,7 +6,8 @@
   "scripts": {
     "build": "lerna run build",
     "clean": "lerna run clean",
-    "publish:all": "lerna publish --force-publish='*' --exact --no-git-tag-version --no-git-reset --no-verify-access --yes",
+    "clean:git-head": "lerna exec node \\$LERNA_ROOT_PATH/scripts/clean-git-head.js",
+    "release": "lerna publish --force-publish='*' --exact --no-git-tag-version --no-git-reset --no-verify-access --yes && yarn clean:git-head",
     "format": "prettier --write '**/*.{ts,js,json}' && eslint --fix --max-warnings=0 --ext=.ts,.js .",
     "lint": "prettier --check '**/*.{ts,js,json}' && eslint --max-warnings=0 --ext=.ts,.js .",
     "type-check": "yarn tsc --noEmit",
