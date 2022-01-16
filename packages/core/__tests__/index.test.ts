@@ -108,6 +108,40 @@ describe('sendApilyticsMetrics()', () => {
     });
   });
 
+  it('should send query parameters', async () => {
+    sendApilyticsMetrics({
+      ...params,
+      query: 'key=val&other=123',
+    });
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data).toHaveProperty('query', 'key=val&other=123');
+  });
+
+  it('should not send empty query parameters', async () => {
+    sendApilyticsMetrics({
+      ...params,
+      query: undefined,
+    });
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    let data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data).not.toHaveProperty('query');
+
+    sendApilyticsMetrics({
+      ...params,
+      query: '',
+    });
+
+    expect(requestSpy).toHaveBeenCalledTimes(2);
+
+    data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data).not.toHaveProperty('query');
+  });
+
   it('should hide HTTP errors in production', async () => {
     // @ts-ignore: Assigning to a read-only property.
     process.env.NODE_ENV = 'production';

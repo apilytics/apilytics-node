@@ -1,3 +1,5 @@
+import { URL } from 'url';
+
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 
@@ -24,9 +26,17 @@ export const withApilytics = <T>(
       // otherwise, we could end up sending NextApiResponse's default 200 status.
       statusCode = res.statusCode;
     } finally {
+      let path, query;
+      if (req.url) {
+        ({ pathname: path, search: query } = new URL(
+          req.url,
+          'http://_', // Cannot parse a relative URL, so make it absolute.
+        ));
+      }
       sendApilyticsMetrics({
         apiKey,
-        path: req.url?.split('?')[0] ?? '',
+        path: path ?? '',
+        query,
         method: req.method ?? '',
         statusCode,
         timeMillis: timer(),

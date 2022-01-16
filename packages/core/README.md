@@ -47,6 +47,7 @@ const myApilyticsMiddleware = async (req, handler) => {
   sendApilyticsMetrics({
     apiKey,
     path: req.path,
+    query: req.queryString,
     method: req.method,
     statusCode: res.statusCode,
     timeMillis: timer(),
