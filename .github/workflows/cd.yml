@@ -39,7 +39,7 @@ jobs:
         id: publish
         run: |
           echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' > .npmrc
-          yarn publish:all ${{ github.event.inputs.release-type }}
+          yarn release ${{ github.event.inputs.release-type }}
           echo "::set-output name=version::$(node --print 'require("./lerna.json").version')"
 
       - name: "Update the changelog"
