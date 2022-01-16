@@ -7,6 +7,9 @@ import type { Request, Response } from 'express';
 
 import { apilyticsMiddleware } from '../src';
 
+const APILYTICS_VERSION = require('@apilytics/core/package.json').version;
+const EXPRESS_VERSION = require('express/package.json').version;
+
 describe('apilyticsMiddleware()', () => {
   const apiKey = 'dummy-key';
 
@@ -65,6 +68,10 @@ describe('apilyticsMiddleware()', () => {
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
+    expect(APILYTICS_VERSION).toBeTruthy();
+    expect(process.versions.node).toBeTruthy();
+    expect(EXPRESS_VERSION).toBeTruthy();
+
     expect(requestSpy).toHaveBeenLastCalledWith({
       hostname: 'www.apilytics.io',
       port: 443,
@@ -74,6 +81,7 @@ describe('apilyticsMiddleware()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
+        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION}`,
       },
     });
 
@@ -107,6 +115,7 @@ describe('apilyticsMiddleware()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
+        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION}`,
       },
     });
 

@@ -1,4 +1,3 @@
-/* eslint @typescript-eslint/no-var-requires: "off" */
 const builtins = require('module').builtinModules.join('|');
 
 module.exports = {
@@ -12,6 +11,7 @@ module.exports = {
     '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/consistent-type-imports': 'error',
+    '@typescript-eslint/no-var-requires': 'off',
     'no-return-await': 'error',
     'import/no-duplicates': 'error',
     'simple-import-sort/imports': [

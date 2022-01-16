@@ -1,6 +1,6 @@
 #!/bin/sh
 
-head="$(git remote show origin | awk '/HEAD branch/ {print $NF}')"
+head="$GITHUB_BASE_REF"
 current="$(git rev-parse HEAD)"
 
 if ! git merge-base --is-ancestor "origin/${head}" "$current"; then

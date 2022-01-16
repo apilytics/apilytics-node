@@ -7,6 +7,9 @@ import type { NextApiHandler } from 'next';
 
 import { withApilytics } from '../src';
 
+const APILYTICS_VERSION = require('@apilytics/core/package.json').version;
+const NEXT_VERSION = require('next/package.json').version;
+
 describe('withApilytics()', () => {
   const apiKey = 'dummy-key';
 
@@ -85,6 +88,10 @@ describe('withApilytics()', () => {
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
+    expect(APILYTICS_VERSION).toBeTruthy();
+    expect(process.versions.node).toBeTruthy();
+    expect(NEXT_VERSION).toBeTruthy();
+
     expect(requestSpy).toHaveBeenLastCalledWith({
       hostname: 'www.apilytics.io',
       port: 443,
@@ -94,6 +101,7 @@ describe('withApilytics()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
+        'Apilytics-Version': `apilytics-node-next/${APILYTICS_VERSION};node/${process.versions.node};next/${NEXT_VERSION}`,
       },
     });
 
@@ -127,6 +135,7 @@ describe('withApilytics()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
+        'Apilytics-Version': `apilytics-node-next/${APILYTICS_VERSION};node/${process.versions.node};next/${NEXT_VERSION}`,
       },
     });
 

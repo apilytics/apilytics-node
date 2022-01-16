@@ -1,5 +1,6 @@
 import https from 'https';
-import process from 'process';
+
+const APILYTICS_VERSION = require('../package.json').version;
 
 interface Params {
   apiKey: string;
@@ -7,11 +8,22 @@ interface Params {
   method: string;
   statusCode: number | null;
   timeMillis: number;
+  apilyticsIntegration?: string;
+  integratedLibrary?: string;
 }
 
 export const sendApilyticsMetrics = (params: Params): void => {
-  const { apiKey, ...metrics } = params;
+  const { apiKey, apilyticsIntegration, integratedLibrary, ...metrics } =
+    params;
   const data = JSON.stringify(metrics);
+
+  let apilyticsVersion = `${
+    apilyticsIntegration ?? 'apilytics-node-core'
+  }/${APILYTICS_VERSION};node/${process.versions.node}`;
+
+  if (integratedLibrary) {
+    apilyticsVersion += `;${integratedLibrary}`;
+  }
 
   const options = {
     hostname: 'www.apilytics.io',
@@ -22,6 +34,7 @@ export const sendApilyticsMetrics = (params: Params): void => {
       'Content-Type': 'application/json',
       'Content-Length': data.length,
       'X-API-Key': apiKey,
+      'Apilytics-Version': apilyticsVersion,
     },
   };
 

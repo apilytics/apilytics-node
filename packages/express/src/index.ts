@@ -1,6 +1,8 @@
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
+const EXPRESS_VERSION = require('express/package.json').version;
+
 export const apilyticsMiddleware = (
   apiKey: string | undefined,
 ): RequestHandler => {
@@ -19,6 +21,8 @@ export const apilyticsMiddleware = (
         method: req.method,
         statusCode: res.statusCode,
         timeMillis: timer(),
+        apilyticsIntegration: 'apilytics-node-express',
+        integratedLibrary: `express/${EXPRESS_VERSION}`,
       });
     });
     next();

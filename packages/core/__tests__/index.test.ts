@@ -3,11 +3,14 @@ import type http from 'http';
 
 import { milliSecondTimer, sendApilyticsMetrics } from '../src';
 
+const APILYTICS_VERSION = require('../package.json').version;
+
 describe('sendApilyticsMetrics()', () => {
   const OLD_ENV = process.env;
+  const apiKey = 'dummy-key';
 
   const params = {
-    apiKey: 'dummy-key',
+    apiKey,
     path: '/',
     method: 'GET',
     statusCode: 200,
@@ -15,6 +18,7 @@ describe('sendApilyticsMetrics()', () => {
   };
 
   let consoleErrorSpy: jest.SpyInstance;
+  let requestSpy: jest.SpyInstance;
 
   const clientRequestMock = {
     on: jest.fn().mockImplementation((event, handler) => {
@@ -28,7 +32,7 @@ describe('sendApilyticsMetrics()', () => {
     jest.resetModules();
     process.env = { ...OLD_ENV };
 
-    jest
+    requestSpy = jest
       .spyOn(https, 'request')
       .mockImplementation(
         () => clientRequestMock as unknown as http.ClientRequest,
@@ -44,6 +48,64 @@ describe('sendApilyticsMetrics()', () => {
 
   afterAll(() => {
     process.env = OLD_ENV;
+  });
+
+  it('should call apilytics API', async () => {
+    sendApilyticsMetrics(params);
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    expect(APILYTICS_VERSION).toBeTruthy();
+    expect(process.versions.node).toBeTruthy();
+
+    expect(requestSpy).toHaveBeenLastCalledWith({
+      hostname: 'www.apilytics.io',
+      port: 443,
+      path: '/api/v1/middleware',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': expect.any(Number),
+        'X-API-Key': apiKey,
+        'Apilytics-Version': `apilytics-node-core/${APILYTICS_VERSION};node/${process.versions.node}`,
+      },
+    });
+
+    expect(clientRequestMock.on).toHaveBeenCalledTimes(1);
+    expect(clientRequestMock.write).toHaveBeenCalledTimes(1);
+    expect(clientRequestMock.end).toHaveBeenCalledTimes(1);
+
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data).toStrictEqual({
+      path: '/',
+      method: 'GET',
+      statusCode: 200,
+      timeMillis: expect.any(Number),
+    });
+    expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
+  });
+
+  it('should allow to pass optional `apilyticsIntegration` and `integratedLibrary` params', async () => {
+    sendApilyticsMetrics({
+      ...params,
+      apilyticsIntegration: 'dummy',
+      integratedLibrary: 'lib/1.2.3',
+    });
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    expect(requestSpy).toHaveBeenLastCalledWith({
+      hostname: 'www.apilytics.io',
+      port: 443,
+      path: '/api/v1/middleware',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': expect.any(Number),
+        'X-API-Key': apiKey,
+        'Apilytics-Version': `dummy/${APILYTICS_VERSION};node/${process.versions.node};lib/1.2.3`,
+      },
+    });
   });
 
   it('should hide HTTP errors in production', async () => {
