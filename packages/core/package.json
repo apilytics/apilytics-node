@@ -1,6 +1,6 @@
 {
   "name": "@apilytics/core",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Apilytics for Node.js - Easy API analytics for Node backends",
   "author": "Apilytics <hello@apilytics.io>",
   "license": "MIT",
@@ -35,5 +35,6 @@
   },
   "engines": {
     "node": ">=12.0.0"
-  }
+  },
+  "gitHead": "d83199fe1aaa931a7dcf4c12f6f67ef0083cbecc"
 }
