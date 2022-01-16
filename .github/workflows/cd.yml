@@ -38,10 +38,9 @@ jobs:
       - name: "Publish to npm"
         id: publish
         run: |
+          echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' > .npmrc
           yarn publish:all ${{ github.event.inputs.release-type }}
           echo "::set-output name=version::$(node --print 'require("./lerna.json").version')"
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: "Update the changelog"
         # Find the first line that starts with `###` or `## [<number>` from the CHANGELOG and insert the new version header before it.
