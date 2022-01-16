@@ -8,15 +8,28 @@ interface Params {
   method: string;
   statusCode: number | null;
   timeMillis: number;
+  query?: string;
   apilyticsIntegration?: string;
   integratedLibrary?: string;
 }
 
-export const sendApilyticsMetrics = (params: Params): void => {
-  const { apiKey, apilyticsIntegration, integratedLibrary, ...metrics } =
-    params;
-  const data = JSON.stringify(metrics);
-
+export const sendApilyticsMetrics = ({
+  apiKey,
+  path,
+  query,
+  method,
+  statusCode,
+  timeMillis,
+  apilyticsIntegration,
+  integratedLibrary,
+}: Params): void => {
+  const data = JSON.stringify({
+    path,
+    query: query || undefined,
+    method,
+    statusCode,
+    timeMillis,
+  });
   let apilyticsVersion = `${
     apilyticsIntegration ?? 'apilytics-node-core'
   }/${APILYTICS_VERSION};node/${process.versions.node}`;

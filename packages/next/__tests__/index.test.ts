@@ -119,7 +119,7 @@ describe('withApilytics()', () => {
     expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
   });
 
-  it('should not send query parameters', async () => {
+  it('should send query parameters', async () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/dummy/123/path/?param=foo&param2=bar');
     expect(response.status).toEqual(201);
@@ -146,6 +146,7 @@ describe('withApilytics()', () => {
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
     expect(data).toStrictEqual({
       path: '/dummy/123/path/',
+      query: '?param=foo&param2=bar',
       method: 'POST',
       statusCode: 201,
       timeMillis: expect.any(Number),
@@ -178,7 +179,7 @@ describe('withApilytics()', () => {
     });
   });
 
-  it('should use empty strings as default values', async () => {
+  it('should use correct default values', async () => {
     const agent = createAgent({ apiKey });
     const response = await agent.get('/empty');
     expect(response.status).toEqual(200);
