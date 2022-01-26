@@ -174,7 +174,6 @@ describe('withApilytics()', () => {
     expect(data).toStrictEqual({
       path: '/error',
       method: 'GET',
-      statusCode: null,
       timeMillis: expect.any(Number),
     });
   });

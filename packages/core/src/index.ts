@@ -6,9 +6,9 @@ interface Params {
   apiKey: string;
   path: string;
   method: string;
-  statusCode: number | null;
   timeMillis: number;
   query?: string;
+  statusCode?: number | null;
   apilyticsIntegration?: string;
   integratedLibrary?: string;
 }
@@ -21,14 +21,14 @@ interface Params {
  * @param params.apiKey - The API key for your Apilytics origin.
  * @param params.path - Path of the user's HTTP request, e.g. '/foo/bar/123'.
  * @param params.method - Method of the user's HTTP request, e.g. 'GET'.
- * @param params.statusCode - Status code for the sent HTTP response.
- *     Can be null if the middleware could not get the status code
- *     for the response. E.g. if the inner request handling threw an exception.
  * @param params.timeMillis - The amount of time in milliseconds it took
  *     to respond to the user's request.
  * @param params.query - Optional query string of the user's HTTP request
  *     e.g. 'key=val&other=123'. An empty string and null are treated equally.
  *     Can have an optional '?' at the start.
+ * @param params.statusCode - Status code for the sent HTTP response.
+ *     Can be omitted (or null) if the middleware could not get the status code
+ *     for the response. E.g. if the inner request handling threw an exception.
  * @param params.apilyticsIntegration - Name of the Apilytics integration that's
  *     calling this, e.g. 'apilytics-node-express'.
  *     No need to pass this when calling from user code.
@@ -53,9 +53,9 @@ export const sendApilyticsMetrics = ({
   apiKey,
   path,
   method,
-  statusCode,
   timeMillis,
   query,
+  statusCode,
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
