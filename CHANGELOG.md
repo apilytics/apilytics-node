@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Thoroughly document all exported symbols with JSDoc.
+- Enable `inlineSources` for source maps.
+
+### Changed
+
+- Change `statusCode` into an optional parameter in `@apilytics/core` `sendApilyticsMetrics`.
+
 ## [1.1.0] - 2022-01-16
 
 ### Added
