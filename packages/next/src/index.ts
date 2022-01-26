@@ -5,6 +5,23 @@ import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 
 const NEXT_VERSION = require('next/package.json').version;
 
+/**
+ * Next.js middleware that sends API analytics data to Apilytics (https://apilytics.io).
+ *
+ * @param handler - Next.js API route handler that this middleware should apply to.
+ * @param apiKey - The API key for your Apilytics origin.
+ * @returns A new API route handler which wraps the one that was passed in.
+ *
+ * @example
+ *
+ *    import { withApilytics } from '@apilytics/next';
+ *
+ *    const handler = async (req, res) => {
+ *      // ...
+ *    };
+ *
+ *    export default withApilytics(handler, "<your-api-key>");
+ */
 export const withApilytics = <T>(
   handler: NextApiHandler<T>,
   apiKey: string | undefined,
