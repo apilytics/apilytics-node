@@ -5,6 +5,21 @@ import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
 const EXPRESS_VERSION = require('express/package.json').version;
 
+/**
+ * Express middleware that sends API analytics data to Apilytics (https://apilytics.io).
+ *
+ * @param apiKey - The API key for your Apilytics origin.
+ * @returns An Express middleware that can be passed to `app.use()`.
+ *
+ * @example
+ *
+ *     const { apilyticsMiddleware } = require('@apilytics/express');
+ *     const express = require('express');
+ *
+ *     const app = express();
+ *
+ *     app.use(apilyticsMiddleware("your-api-key"));
+ */
 export const apilyticsMiddleware = (
   apiKey: string | undefined,
 ): RequestHandler => {

@@ -13,13 +13,49 @@ interface Params {
   integratedLibrary?: string;
 }
 
+/**
+ * Send API analytics data to Apilytics (https://apilytics.io).
+ * Does the sending as fire-and-forget background task.
+ *
+ * @param params
+ * @param params.apiKey - The API key for your Apilytics origin.
+ * @param params.path - Path of the user's HTTP request, e.g. '/foo/bar/123'.
+ * @param params.method - Method of the user's HTTP request, e.g. 'GET'.
+ * @param params.statusCode - Status code for the sent HTTP response.
+ *     Can be null if the middleware could not get the status code
+ *     for the response. E.g. if the inner request handling threw an exception.
+ * @param params.timeMillis - The amount of time in milliseconds it took
+ *     to respond to the user's request.
+ * @param params.query - Optional query string of the user's HTTP request
+ *     e.g. 'key=val&other=123'. An empty string and null are treated equally.
+ *     Can have an optional '?' at the start.
+ * @param params.apilyticsIntegration - Name of the Apilytics integration that's
+ *     calling this, e.g. 'apilytics-node-express'.
+ *     No need to pass this when calling from user code.
+ * @param params.integratedLibrary - Name and version of the integration that
+ *     this is used in, e.g. 'express/4.17.2'.
+ *     No need to pass this when calling from user code.
+ *
+ * @example
+ *
+ *    const timer = milliSecondTimer();
+ *    const res = await handler(req);
+ *    sendApilyticsMetrics({
+ *      apikey: "<your-api-key>",
+ *      path: req.path,
+ *      query: req.queryString,
+ *      method: req.method,
+ *      statusCode: res.statusCode,
+ *      timeMillis: timer(),
+ *    });
+ */
 export const sendApilyticsMetrics = ({
   apiKey,
   path,
-  query,
   method,
   statusCode,
   timeMillis,
+  query,
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
@@ -27,7 +63,7 @@ export const sendApilyticsMetrics = ({
     path,
     query: query || undefined,
     method,
-    statusCode,
+    statusCode: statusCode ?? undefined,
     timeMillis,
   });
   let apilyticsVersion = `${
@@ -65,6 +101,13 @@ export const sendApilyticsMetrics = ({
   });
 };
 
+/**
+ * Times the amount of milliseconds something takes to execute.
+ * The timer starts when this is initially called.
+ *
+ * @returns A function that can be called to stop the timer.
+ *     That function's return value is the elapsed time.
+ */
 export const milliSecondTimer = (): (() => number) => {
   const startTimeNs = process.hrtime.bigint();
 
