@@ -36,12 +36,25 @@ export const apilyticsMiddleware = (
         req.originalUrl,
         'http://_', // Cannot parse a relative URL, so make it absolute.
       );
+
+      const _requestSize = Number(req.headers['content-length']);
+      const requestSize = isNaN(_requestSize) ? undefined : _requestSize;
+
+      const _responseSize = Number(
+        // @ts-ignore: `_contentLength` is not typed, but it does exist sometimes
+        // when the header doesn't. Even if it doesn't this won't fail at runtime.
+        res.getHeader('content-length') ?? res._contentLength,
+      );
+      const responseSize = isNaN(_responseSize) ? undefined : _responseSize;
+
       sendApilyticsMetrics({
         apiKey,
         path,
         query,
         method: req.method,
         statusCode: res.statusCode,
+        requestSize,
+        responseSize,
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-express',
         integratedLibrary: `express/${EXPRESS_VERSION}`,

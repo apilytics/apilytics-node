@@ -9,6 +9,8 @@ interface Params {
   timeMillis: number;
   query?: string;
   statusCode?: number | null;
+  requestSize?: number;
+  responseSize?: number;
   apilyticsIntegration?: string;
   integratedLibrary?: string;
 }
@@ -29,6 +31,8 @@ interface Params {
  * @param params.statusCode - Status code for the sent HTTP response.
  *     Can be omitted (or null) if the middleware could not get the status code
  *     for the response. E.g. if the inner request handling threw an exception.
+ * @param params.requestSize - Size of the user's HTTP request's body in bytes.
+ * @param params.responseSize - Size of the sent HTTP response's body in bytes.
  * @param params.apilyticsIntegration - Name of the Apilytics integration that's
  *     calling this, e.g. 'apilytics-node-express'.
  *     No need to pass this when calling from user code.
@@ -46,6 +50,8 @@ interface Params {
  *      query: req.queryString,
  *      method: req.method,
  *      statusCode: res.statusCode,
+ *      requestSize: req.bodyBytes.length,
+ *      responseSize: res.bodyBytes.length,
  *      timeMillis: timer(),
  *    });
  */
@@ -56,6 +62,8 @@ export const sendApilyticsMetrics = ({
   timeMillis,
   query,
   statusCode,
+  requestSize,
+  responseSize,
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
@@ -64,6 +72,8 @@ export const sendApilyticsMetrics = ({
     query: query || undefined,
     method,
     statusCode: statusCode ?? undefined,
+    requestSize,
+    responseSize,
     timeMillis,
   });
   let apilyticsVersion = `${

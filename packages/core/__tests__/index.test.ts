@@ -142,6 +142,30 @@ describe('sendApilyticsMetrics()', () => {
     expect(data).not.toHaveProperty('query');
   });
 
+  it('should handle empty values correctly', async () => {
+    sendApilyticsMetrics({
+      apiKey,
+      path: '',
+      method: '',
+      timeMillis: 0,
+      query: '',
+      statusCode: null,
+      requestSize: undefined,
+      responseSize: undefined,
+      apilyticsIntegration: undefined,
+      integratedLibrary: undefined,
+    });
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data).toStrictEqual({
+      path: '',
+      method: '',
+      timeMillis: 0,
+    });
+  });
+
   it('should hide HTTP errors in production', async () => {
     // @ts-ignore: Assigning to a read-only property.
     process.env.NODE_ENV = 'production';
