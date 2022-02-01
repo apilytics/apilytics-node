@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Send request and response body size information with metrics.
 - Thoroughly document all exported symbols with JSDoc.
 - Enable `inlineSources` for source maps.
 

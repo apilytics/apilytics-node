@@ -50,6 +50,8 @@ const myApilyticsMiddleware = async (req, handler) => {
     query: req.queryString,
     method: req.method,
     statusCode: res.statusCode,
+    requestSize: req.bodyBytes.length,
+    responseSize: res.bodyBytes.length,
     timeMillis: timer(),
   });
   return res;

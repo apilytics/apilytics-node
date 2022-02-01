@@ -34,7 +34,8 @@ export const withApilytics = <T>(
     req: NextApiRequest,
     res: NextApiResponse<T>,
   ): Promise<void> => {
-    let statusCode = null;
+    let statusCode: number | undefined;
+    let responseSize: number | undefined;
     const timer = milliSecondTimer();
 
     try {
@@ -50,12 +51,25 @@ export const withApilytics = <T>(
           'http://_', // Cannot parse a relative URL, so make it absolute.
         ));
       }
+
+      const _requestSize = Number(req.headers['content-length']);
+      const requestSize = isNaN(_requestSize) ? undefined : _requestSize;
+
+      const _responseSize = Number(
+        // @ts-ignore: `_contentLength` is not typed, but it does exist sometimes
+        // when the header doesn't. Even if it doesn't this won't fail at runtime.
+        res.getHeader('content-length') ?? res._contentLength,
+      );
+      responseSize = isNaN(_responseSize) ? undefined : _responseSize;
+
       sendApilyticsMetrics({
         apiKey,
         path: path ?? '',
         query,
         method: req.method ?? '',
         statusCode,
+        requestSize,
+        responseSize,
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-next',
         integratedLibrary: `next/${NEXT_VERSION}`,
