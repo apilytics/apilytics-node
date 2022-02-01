@@ -32,21 +32,15 @@ jobs:
       - name: "Install dependencies"
         run: yarn install --frozen-lockfile
 
-      - name: "Build the sources"
-        run: yarn build
-
-      - name: "Publish to npm"
-        id: publish
+      - name: "Bump package versions"
+        id: bump
         run: |
-          echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' > .npmrc
-          yarn release ${{ github.event.inputs.release-type }}
+          yarn bump ${{ github.event.inputs.release-type }}
           echo "::set-output name=version::$(node --print 'require("./lerna.json").version')"
 
       - name: "Update the changelog"
         # Find the first line that starts with `###` or `## [<number>` from the CHANGELOG and insert the new version header before it.
-        run: |
-          current_date="$(date -u '+%Y-%m-%d')"
-          sed -i "0,/^\(###\|## *\[[0-9]\).*/{s//## [${{ steps.publish.outputs.version }}] - ${current_date}\n\n&/}" CHANGELOG.md
+        run: sed -i "0,/^\(###\|## *\[[0-9]\).*/{s//## [${{ steps.bump.outputs.version }}] - $(date -u '+%Y-%m-%d')\n\n&/}" CHANGELOG.md
 
       - name: "Extract version's changelog for release notes"
         # 1. Find the lines between the first `## [<number>` and the second `## [<number>`.
@@ -54,17 +48,27 @@ jobs:
         run: sed '1,/^## *\[[0-9]/d;/^## *\[[0-9]/Q' CHANGELOG.md | sed -e :a -e '/./,$!d;/^\n*$/{$d;N;};/\n$/ba' > release_notes.txt
 
       - name: "Commit and tag the changes"
-        uses: EndBug/add-and-commit@8c12ff729a98cfbcd3fe38b49f55eceb98a5ec02  # v7.5.0
-        with:
-          add: '["lerna.json", "*package.json", "CHANGELOG.md"]'
-          message: 'Release ${{ steps.publish.outputs.version }}'
-          tag: 'v${{ steps.publish.outputs.version }} --annotate --file /dev/null'
-          default_author: github_actions
-          pathspec_error_handling: exitImmediately
+        run: |
+          git config user.name 'github-actions'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lerna.json \*package.json CHANGELOG.md
+          git commit --message='Release ${{ steps.bump.outputs.version }}'
+          git tag --annotate --message='' v${{ steps.bump.outputs.version }}
+
+      - name: "Build the sources"
+        run: yarn build
+
+      - name: "Publish to npm"
+        run: |
+          echo '//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}' > .npmrc
+          yarn release
+
+      - name: "Push the changes"
+        run: git push --follow-tags
 
       - name: "Create a GitHub release"
         uses: softprops/action-gh-release@1e07f4398721186383de40550babbdf2b84acfc5  # v1
         with:
-          tag_name: v${{ steps.publish.outputs.version }}
-          name: v${{ steps.publish.outputs.version }}
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: v${{ steps.bump.outputs.version }}
           body_path: release_notes.txt
