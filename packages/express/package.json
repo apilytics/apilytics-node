@@ -1,6 +1,6 @@
 {
   "name": "@apilytics/express",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Apilytics for Express - Easy API analytics for Express backends",
   "author": "Apilytics <hello@apilytics.io>",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@apilytics/core": "1.1.0",
+    "@apilytics/core": "1.2.0",
     "express": "*"
   },
   "devDependencies": {
