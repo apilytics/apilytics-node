@@ -34,7 +34,7 @@ export const withApilytics = <T>(
     req: NextApiRequest,
     res: NextApiResponse<T>,
   ): Promise<void> => {
-    let statusCode = null;
+    let statusCode: number | undefined;
     const timer = milliSecondTimer();
 
     try {
