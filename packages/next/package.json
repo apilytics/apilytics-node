@@ -31,10 +31,13 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@apilytics/core": "1.2.0",
+    "@apilytics/core": "1.2.0"
+  },
+  "peerDependencies": {
     "next": "*"
   },
   "devDependencies": {
+    "next": "*",
     "react": "17.0.2"
   },
   "engines": {

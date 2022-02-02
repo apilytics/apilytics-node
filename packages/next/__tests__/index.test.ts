@@ -61,8 +61,10 @@ describe('withApilytics()', () => {
 
   const createAgent = ({
     apiKey,
+    middleware = withApilytics,
   }: {
     apiKey: string | undefined;
+    middleware?: typeof withApilytics;
   }): request.SuperAgentTest => {
     const requestListener = (
       req: http.IncomingMessage,
@@ -72,7 +74,7 @@ describe('withApilytics()', () => {
         req,
         res,
         undefined,
-        withApilytics(testHandler, apiKey),
+        middleware(testHandler, apiKey),
         {
           previewModeId: 'id',
           previewModeEncryptionKey: 'key',
@@ -243,5 +245,29 @@ describe('withApilytics()', () => {
     numberSpy.mockRestore();
     expect(response.status).toEqual(200);
     expect(requestSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should handle `next` not being installed', async () => {
+    let agent: request.SuperAgentTest;
+    jest.isolateModules(() => {
+      jest.mock('next/package.json', () => {
+        throw new Error();
+      });
+      const { withApilytics } = require('../src');
+      agent = createAgent({ apiKey, middleware: withApilytics });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const response = await agent!.get('/dummy');
+    expect(response.status).toEqual(200);
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    expect(requestSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Apilytics-Version': `apilytics-node-next/${APILYTICS_VERSION};node/${process.versions.node}`,
+        }),
+      }),
+    );
   });
 });

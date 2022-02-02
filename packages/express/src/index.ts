@@ -3,7 +3,12 @@ import { URL } from 'url';
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 
-const EXPRESS_VERSION = require('express/package.json').version;
+let EXPRESS_VERSION: string | undefined;
+try {
+  EXPRESS_VERSION = require('express/package.json').version;
+} catch {
+  // `express` peer dependency not installed (for some reason).
+}
 
 /**
  * Express middleware that sends API analytics data to Apilytics (https://apilytics.io).
@@ -58,7 +63,9 @@ export const apilyticsMiddleware = (
         userAgent: req.headers['user-agent'],
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-express',
-        integratedLibrary: `express/${EXPRESS_VERSION}`,
+        integratedLibrary: EXPRESS_VERSION
+          ? `express/${EXPRESS_VERSION}`
+          : undefined,
       });
     });
     next();
