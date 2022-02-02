@@ -3,7 +3,12 @@ import { URL } from 'url';
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextApiHandler, NextApiRequest, NextApiResponse } from 'next';
 
-const NEXT_VERSION = require('next/package.json').version;
+let NEXT_VERSION: string | undefined;
+try {
+  NEXT_VERSION = require('next/package.json').version;
+} catch {
+  // `next` peer dependency not installed (for some reason).
+}
 
 /**
  * Next.js middleware that sends API analytics data to Apilytics (https://apilytics.io).
@@ -70,9 +75,10 @@ export const withApilytics = <T>(
         statusCode,
         requestSize,
         responseSize,
+        userAgent: req.headers['user-agent'],
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-next',
-        integratedLibrary: `next/${NEXT_VERSION}`,
+        integratedLibrary: NEXT_VERSION ? `next/${NEXT_VERSION}` : undefined,
       });
     }
   };

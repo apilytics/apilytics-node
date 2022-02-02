@@ -54,12 +54,14 @@ describe('apilyticsMiddleware()', () => {
 
   const createAgent = ({
     apiKey,
+    middleware = apilyticsMiddleware,
   }: {
     apiKey: string | undefined;
+    middleware?: typeof apilyticsMiddleware;
   }): request.SuperAgentTest => {
     const app = express();
 
-    app.use(apilyticsMiddleware(apiKey));
+    app.use(middleware(apiKey));
 
     app.all('*', testHandler);
 
@@ -141,6 +143,16 @@ describe('apilyticsMiddleware()', () => {
     });
   });
 
+  it('should send User-Agent', async () => {
+    const agent = createAgent({ apiKey });
+    const response = await agent.get('/dummy').set('User-Agent', 'some agent');
+    expect(response.status).toEqual(200);
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.userAgent).toEqual('some agent');
+  });
+
   it('should handle zero request and response sizes', async () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/empty');
@@ -198,5 +210,29 @@ describe('apilyticsMiddleware()', () => {
     numberSpy.mockRestore();
     expect(response.status).toEqual(200);
     expect(requestSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('should handle `express` not being installed', async () => {
+    let agent: request.SuperAgentTest;
+    jest.isolateModules(() => {
+      jest.mock('express/package.json', () => {
+        throw new Error();
+      });
+      const { apilyticsMiddleware } = require('../src');
+      agent = createAgent({ apiKey, middleware: apilyticsMiddleware });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const response = await agent!.get('/dummy');
+    expect(response.status).toEqual(200);
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    expect(requestSpy).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        headers: expect.objectContaining({
+          'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node}`,
+        }),
+      }),
+    );
   });
 });
