@@ -11,6 +11,7 @@ interface Params {
   statusCode?: number | null;
   requestSize?: number;
   responseSize?: number;
+  userAgent?: string;
   apilyticsIntegration?: string;
   integratedLibrary?: string;
 }
@@ -33,6 +34,8 @@ interface Params {
  *     for the response. E.g. if the inner request handling threw an exception.
  * @param params.requestSize - Size of the user's HTTP request's body in bytes.
  * @param params.responseSize - Size of the sent HTTP response's body in bytes.
+ * @param params.userAgent - Value of the `User-Agent` header from the user's
+ *     HTTP request.
  * @param params.apilyticsIntegration - Name of the Apilytics integration that's
  *     calling this, e.g. 'apilytics-node-express'.
  *     No need to pass this when calling from user code.
@@ -52,6 +55,7 @@ interface Params {
  *      statusCode: res.statusCode,
  *      requestSize: req.bodyBytes.length,
  *      responseSize: res.bodyBytes.length,
+ *      userAgent: req.headers['user-agent'],
  *      timeMillis: timer(),
  *    });
  */
@@ -64,6 +68,7 @@ export const sendApilyticsMetrics = ({
   statusCode,
   requestSize,
   responseSize,
+  userAgent,
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
@@ -74,6 +79,7 @@ export const sendApilyticsMetrics = ({
     statusCode: statusCode ?? undefined,
     requestSize,
     responseSize,
+    userAgent: userAgent || undefined,
     timeMillis,
   });
   let apilyticsVersion = `${

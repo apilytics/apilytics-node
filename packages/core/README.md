@@ -52,6 +52,7 @@ const myApilyticsMiddleware = async (req, handler) => {
     statusCode: res.statusCode,
     requestSize: req.bodyBytes.length,
     responseSize: res.bodyBytes.length,
+    userAgent: req.headers['user-agent'],
     timeMillis: timer(),
   });
   return res;

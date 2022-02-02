@@ -161,6 +161,16 @@ describe('withApilytics()', () => {
     });
   });
 
+  it('should send User-Agent', async () => {
+    const agent = createAgent({ apiKey });
+    const response = await agent.get('/dummy').set('User-Agent', 'some agent');
+    expect(response.status).toEqual(200);
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.userAgent).toEqual('some agent');
+  });
+
   it('should handle zero request and response sizes', async () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/empty');

@@ -70,6 +70,7 @@ export const withApilytics = <T>(
         statusCode,
         requestSize,
         responseSize,
+        userAgent: req.headers['user-agent'],
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-next',
         integratedLibrary: `next/${NEXT_VERSION}`,

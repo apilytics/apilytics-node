@@ -55,6 +55,7 @@ export const apilyticsMiddleware = (
         statusCode: res.statusCode,
         requestSize,
         responseSize,
+        userAgent: req.headers['user-agent'],
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-express',
         integratedLibrary: `express/${EXPRESS_VERSION}`,

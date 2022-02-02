@@ -152,6 +152,7 @@ describe('sendApilyticsMetrics()', () => {
       statusCode: null,
       requestSize: undefined,
       responseSize: undefined,
+      userAgent: '',
       apilyticsIntegration: undefined,
       integratedLibrary: undefined,
     });
