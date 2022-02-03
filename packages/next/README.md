@@ -34,6 +34,7 @@ const handler = async (req, res) => {
   // ...
 };
 
+// Ideally the outermost middleware that you wrap your handler with.
 export default withApilytics(handler, process.env.APILYTICS_API_KEY);
 ```
 
