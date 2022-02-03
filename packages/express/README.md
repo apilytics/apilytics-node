@@ -33,6 +33,7 @@ const express = require('express');
 
 const app = express();
 
+// Ideally the first middleware you add.
 app.use(apilyticsMiddleware(process.env.APILYTICS_API_KEY));
 ```
 

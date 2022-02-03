@@ -13,6 +13,8 @@ try {
 /**
  * Next.js middleware that sends API analytics data to Apilytics (https://apilytics.io).
  *
+ * This should ideally be the outermost middleware that you wrap your handler with.
+ *
  * @param handler - Next.js API route handler that this middleware should apply to.
  * @param apiKey - The API key for your Apilytics origin.
  * @returns A new API route handler which wraps the one that was passed in.

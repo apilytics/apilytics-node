@@ -12,6 +12,8 @@ try {
 
 /**
  * Express middleware that sends API analytics data to Apilytics (https://apilytics.io).
+
+ * This should ideally be the first middleware you add to your app.
  *
  * @param apiKey - The API key for your Apilytics origin.
  * @returns An Express middleware that can be passed to `app.use()`.
