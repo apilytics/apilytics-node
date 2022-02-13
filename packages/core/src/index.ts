@@ -45,19 +45,19 @@ interface Params {
  *
  * @example
  *
- *    const timer = milliSecondTimer();
- *    const res = await handler(req);
- *    sendApilyticsMetrics({
- *      apikey: "<your-api-key>",
- *      path: req.path,
- *      query: req.queryString,
- *      method: req.method,
- *      statusCode: res.statusCode,
- *      requestSize: req.bodyBytes.length,
- *      responseSize: res.bodyBytes.length,
- *      userAgent: req.headers['user-agent'],
- *      timeMillis: timer(),
- *    });
+ *     const timer = milliSecondTimer();
+ *     const res = await handler(req);
+ *     sendApilyticsMetrics({
+ *       apikey: "<your-api-key>",
+ *       path: req.path,
+ *       query: req.queryString,
+ *       method: req.method,
+ *       statusCode: res.statusCode,
+ *       requestSize: req.bodyBytes.length,
+ *       responseSize: res.bodyBytes.length,
+ *       userAgent: req.headers['user-agent'],
+ *       timeMillis: timer(),
+ *     });
  */
 export const sendApilyticsMetrics = ({
   apiKey,
@@ -123,6 +123,12 @@ export const sendApilyticsMetrics = ({
  *
  * @returns A function that can be called to stop the timer.
  *     That function's return value is the elapsed time.
+ *
+ * @example
+ *
+ *     const timer = milliSecondTimer();
+ *     // Run some code...
+ *     const elapsed = timer();
  */
 export const milliSecondTimer = (): (() => number) => {
   const startTimeNs = process.hrtime.bigint();

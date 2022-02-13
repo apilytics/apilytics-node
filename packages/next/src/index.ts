@@ -21,13 +21,13 @@ try {
  *
  * @example
  *
- *    import { withApilytics } from '@apilytics/next';
+ *     import { withApilytics } from '@apilytics/next';
  *
- *    const handler = async (req, res) => {
- *      // ...
- *    };
+ *     const handler = async (req, res) => {
+ *       // ...
+ *     };
  *
- *    export default withApilytics(handler, "<your-api-key>");
+ *     export default withApilytics(handler, "<your-api-key>");
  */
 export const withApilytics = <T>(
   handler: NextApiHandler<T>,
