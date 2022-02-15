@@ -1,4 +1,6 @@
+import fs from 'fs';
 import https from 'https';
+import os from 'os';
 import type http from 'http';
 
 import { milliSecondTimer, sendApilyticsMetrics } from '../src';
@@ -8,6 +10,17 @@ const APILYTICS_VERSION = require('../package.json').version;
 const flushTimers = (): Promise<void> => {
   jest.runAllTimers();
   return new Promise(jest.requireActual('timers').setImmediate);
+};
+
+const mockProcessPlatform = (
+  platform: typeof process.platform,
+): (() => void) => {
+  const originalPlatform = process.platform;
+  Object.defineProperty(process, 'platform', { value: platform });
+
+  return (): void => {
+    Object.defineProperty(process, 'platform', { value: originalPlatform });
+  };
 };
 
 describe('sendApilyticsMetrics()', () => {
@@ -22,8 +35,9 @@ describe('sendApilyticsMetrics()', () => {
     timeMillis: 10,
   };
 
-  let consoleErrorSpy: jest.SpyInstance;
   let requestSpy: jest.SpyInstance;
+  let consoleErrorSpy: jest.SpyInstance;
+  let readFileSpy: jest.SpyInstance;
 
   const clientRequestMock = {
     on: jest.fn().mockImplementation((event, handler) => {
@@ -36,6 +50,7 @@ describe('sendApilyticsMetrics()', () => {
   beforeEach(() => {
     jest.useFakeTimers('legacy');
     jest.resetModules();
+
     process.env = { ...OLD_ENV };
 
     requestSpy = jest
@@ -45,6 +60,11 @@ describe('sendApilyticsMetrics()', () => {
       );
 
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    readFileSpy = jest
+      .spyOn(fs.promises, 'readFile')
+      // @ts-ignore
+      .mockImplementation(fs.readFileSync);
   });
 
   afterEach(() => {
@@ -90,6 +110,8 @@ describe('sendApilyticsMetrics()', () => {
       method: 'GET',
       statusCode: 200,
       cpuUsage: expect.any(Number),
+      memoryUsage: expect.any(Number),
+      memoryTotal: expect.any(Number),
       timeMillis: expect.any(Number),
     });
     expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
@@ -183,6 +205,8 @@ describe('sendApilyticsMetrics()', () => {
     expect(data).toStrictEqual({
       path: '',
       method: '',
+      memoryUsage: expect.any(Number),
+      memoryTotal: expect.any(Number),
       cpuUsage: expect.any(Number),
       timeMillis: 0,
     });
@@ -199,6 +223,93 @@ describe('sendApilyticsMetrics()', () => {
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
     expect(data.cpuUsage).toBeGreaterThanOrEqual(0);
     expect(data.cpuUsage).toBeLessThanOrEqual(1);
+  });
+
+  it('should send non-zero memory usage which should be less than memory total', async () => {
+    sendApilyticsMetrics(params);
+
+    await flushTimers();
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.memoryUsage).toBeGreaterThan(0);
+    expect(data.memoryTotal).toBeGreaterThan(data.memoryUsage);
+  });
+
+  it('should read /proc/meminfo when on Linux', async () => {
+    const restorePlatform = mockProcessPlatform('linux');
+
+    const memoryTotal = 4125478912;
+    const memoryAvailable = 3360526336;
+    jest.spyOn(os, 'totalmem').mockReturnValueOnce(memoryTotal);
+
+    readFileSpy.mockReturnValueOnce(`MemTotal:        4028788 kB
+MemFree:          789940 kB
+MemAvailable:    ${memoryAvailable / 1024} kB
+Buffers:         2450168 kB
+`); // The real file is longer.
+
+    sendApilyticsMetrics(params);
+
+    await flushTimers();
+
+    expect(readFileSpy).toHaveBeenCalledTimes(1);
+    expect(readFileSpy).toHaveBeenCalledWith('/proc/meminfo', 'utf8');
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.memoryUsage).toEqual(memoryTotal - memoryAvailable);
+    expect(data.memoryTotal).toEqual(memoryTotal);
+
+    restorePlatform();
+  });
+
+  it('should fall back to os.freemem() if reading /proc/meminfo fails on Linux', async () => {
+    const restorePlatform = mockProcessPlatform('linux');
+
+    const memoryTotal = 4125478912;
+    const freemem = 1024;
+    jest.spyOn(os, 'totalmem').mockReturnValueOnce(memoryTotal);
+    jest.spyOn(os, 'freemem').mockReturnValueOnce(freemem);
+
+    readFileSpy.mockRejectedValueOnce(new Error());
+
+    sendApilyticsMetrics(params);
+
+    await flushTimers();
+
+    expect(readFileSpy).toHaveBeenCalledTimes(1);
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.memoryUsage).toEqual(memoryTotal - freemem);
+    expect(data.memoryTotal).toEqual(memoryTotal);
+
+    restorePlatform();
+  });
+
+  it('should not try to read /proc/meminfo when not on Linux', async () => {
+    const restorePlatform = mockProcessPlatform('win32');
+
+    const memoryTotal = 4125478912;
+    const freemem = 1024;
+    jest.spyOn(os, 'totalmem').mockReturnValueOnce(memoryTotal);
+    jest.spyOn(os, 'freemem').mockReturnValueOnce(freemem);
+
+    sendApilyticsMetrics(params);
+
+    await flushTimers();
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    expect(readFileSpy).not.toHaveBeenCalled();
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.memoryUsage).toEqual(memoryTotal - freemem);
+    expect(data.memoryTotal).toEqual(memoryTotal);
+
+    restorePlatform();
   });
 
   it('should hide HTTP errors in production', async () => {

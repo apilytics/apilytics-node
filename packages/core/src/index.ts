@@ -1,3 +1,4 @@
+import { promises as fs } from 'fs';
 import https from 'https';
 import os from 'os';
 
@@ -73,52 +74,58 @@ export const sendApilyticsMetrics = ({
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
-  getCpuUsage().then((cpuUsage) => {
-    const data = JSON.stringify({
-      path,
-      query: query || undefined,
-      method,
-      statusCode: statusCode ?? undefined,
-      requestSize,
-      responseSize,
-      userAgent: userAgent || undefined,
-      cpuUsage,
-      timeMillis,
-    });
-    let apilyticsVersion = `${
-      apilyticsIntegration ?? 'apilytics-node-core'
-    }/${APILYTICS_VERSION};node/${process.versions.node}`;
-
-    if (integratedLibrary) {
-      apilyticsVersion += `;${integratedLibrary}`;
-    }
-
-    const options = {
-      hostname: 'www.apilytics.io',
-      port: 443,
-      path: '/api/v1/middleware',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': data.length,
-        'X-API-Key': apiKey,
-        'Apilytics-Version': apilyticsVersion,
-      },
-    };
-
-    new Promise((_, reject) => {
-      const req = https.request(options);
-      req.on('error', (err) => {
-        reject(err);
+  Promise.all([getAvailableMemory(), getCpuUsage()]).then(
+    ([memoryAvailable, cpuUsage]) => {
+      const memoryTotal = os.totalmem();
+      const memoryUsage = memoryTotal - memoryAvailable;
+      const data = JSON.stringify({
+        path,
+        query: query || undefined,
+        method,
+        statusCode: statusCode ?? undefined,
+        requestSize,
+        responseSize,
+        userAgent: userAgent || undefined,
+        cpuUsage,
+        memoryUsage,
+        memoryTotal,
+        timeMillis,
       });
-      req.write(data);
-      req.end();
-    }).catch((err) => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error(err);
+      let apilyticsVersion = `${
+        apilyticsIntegration ?? 'apilytics-node-core'
+      }/${APILYTICS_VERSION};node/${process.versions.node}`;
+
+      if (integratedLibrary) {
+        apilyticsVersion += `;${integratedLibrary}`;
       }
-    });
-  });
+
+      const options = {
+        hostname: 'www.apilytics.io',
+        port: 443,
+        path: '/api/v1/middleware',
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': data.length,
+          'X-API-Key': apiKey,
+          'Apilytics-Version': apilyticsVersion,
+        },
+      };
+
+      new Promise((_, reject) => {
+        const req = https.request(options);
+        req.on('error', (err) => {
+          reject(err);
+        });
+        req.write(data);
+        req.end();
+      }).catch((err) => {
+        if (process.env.NODE_ENV !== 'production') {
+          console.error(err);
+        }
+      });
+    },
+  );
 };
 
 /**
@@ -180,4 +187,24 @@ const sumCpuTimes = (cpus: os.CpuInfo[]): { idle: number; total: number } => {
     idle += cpu.times.idle;
   }
   return { idle, total };
+};
+
+const getAvailableMemory = async (): Promise<number> => {
+  if (process.platform === 'linux') {
+    // On Linux "free" memory is quite uninformative compared to
+    // the available memory, so use the latter instead.
+    let meminfo;
+    try {
+      meminfo = await fs.readFile('/proc/meminfo', 'utf8');
+    } catch (e) {
+      // Prepare for everything and anything.
+    }
+    const kBAvailable = meminfo?.match(/MemAvailable\D*(\d+)/)?.[1];
+    if (kBAvailable) {
+      return Number(kBAvailable) * 1024;
+    }
+  }
+
+  // Fallback for other platforms.
+  return os.freemem();
 };
