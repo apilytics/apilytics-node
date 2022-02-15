@@ -1,6 +1,6 @@
 {
   "name": "@apilytics/next",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Apilytics for Next.js - Easy API analytics for Next.js backends",
   "author": "Apilytics <hello@apilytics.io>",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "clean": "rm -rf dist/ tsconfig.tsbuildinfo"
   },
   "dependencies": {
-    "@apilytics/core": "1.3.0"
+    "@apilytics/core": "1.4.0"
   },
   "peerDependencies": {
     "next": "*"
