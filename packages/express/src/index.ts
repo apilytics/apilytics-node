@@ -1,5 +1,3 @@
-import { URL } from 'url';
-
 import { milliSecondTimer, sendApilyticsMetrics } from '@apilytics/core';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 

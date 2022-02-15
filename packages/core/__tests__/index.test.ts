@@ -5,6 +5,11 @@ import { milliSecondTimer, sendApilyticsMetrics } from '../src';
 
 const APILYTICS_VERSION = require('../package.json').version;
 
+const flushTimers = (): Promise<void> => {
+  jest.runAllTimers();
+  return new Promise(jest.requireActual('timers').setImmediate);
+};
+
 describe('sendApilyticsMetrics()', () => {
   const OLD_ENV = process.env;
   const apiKey = 'dummy-key';
@@ -29,6 +34,7 @@ describe('sendApilyticsMetrics()', () => {
   };
 
   beforeEach(() => {
+    jest.useFakeTimers('legacy');
     jest.resetModules();
     process.env = { ...OLD_ENV };
 
@@ -42,6 +48,7 @@ describe('sendApilyticsMetrics()', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
@@ -52,6 +59,8 @@ describe('sendApilyticsMetrics()', () => {
 
   it('should call apilytics API', async () => {
     sendApilyticsMetrics(params);
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
@@ -80,6 +89,7 @@ describe('sendApilyticsMetrics()', () => {
       path: '/',
       method: 'GET',
       statusCode: 200,
+      cpuUsage: expect.any(Number),
       timeMillis: expect.any(Number),
     });
     expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
@@ -91,6 +101,8 @@ describe('sendApilyticsMetrics()', () => {
       apilyticsIntegration: 'dummy',
       integratedLibrary: 'lib/1.2.3',
     });
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
@@ -114,6 +126,8 @@ describe('sendApilyticsMetrics()', () => {
       query: 'key=val&other=123',
     });
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
@@ -126,6 +140,8 @@ describe('sendApilyticsMetrics()', () => {
       query: undefined,
     });
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
     let data = JSON.parse(clientRequestMock.write.mock.calls[0]);
@@ -135,6 +151,8 @@ describe('sendApilyticsMetrics()', () => {
       ...params,
       query: '',
     });
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(2);
 
@@ -157,14 +175,30 @@ describe('sendApilyticsMetrics()', () => {
       integratedLibrary: undefined,
     });
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
     expect(data).toStrictEqual({
       path: '',
       method: '',
+      cpuUsage: expect.any(Number),
       timeMillis: 0,
     });
+  });
+
+  it('should send CPU usage percentage between 0 and 1', async () => {
+    jest.useRealTimers();
+    sendApilyticsMetrics(params);
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+
+    const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.cpuUsage).toBeGreaterThanOrEqual(0);
+    expect(data.cpuUsage).toBeLessThanOrEqual(1);
   });
 
   it('should hide HTTP errors in production', async () => {
@@ -173,8 +207,7 @@ describe('sendApilyticsMetrics()', () => {
 
     sendApilyticsMetrics(params);
 
-    // Make the inner Promise in `sendApilyticsMetrics` resolve immediately.
-    await new Promise(process.nextTick);
+    await flushTimers();
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(0);
   });
@@ -184,7 +217,8 @@ describe('sendApilyticsMetrics()', () => {
     process.env.NODE_ENV = 'development';
 
     sendApilyticsMetrics(params);
-    await new Promise(process.nextTick);
+
+    await flushTimers();
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(1);
   });

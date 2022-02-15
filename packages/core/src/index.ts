@@ -1,4 +1,5 @@
 import https from 'https';
+import os from 'os';
 
 const APILYTICS_VERSION = require('../package.json').version;
 
@@ -45,19 +46,19 @@ interface Params {
  *
  * @example
  *
- *    const timer = milliSecondTimer();
- *    const res = await handler(req);
- *    sendApilyticsMetrics({
- *      apikey: "<your-api-key>",
- *      path: req.path,
- *      query: req.queryString,
- *      method: req.method,
- *      statusCode: res.statusCode,
- *      requestSize: req.bodyBytes.length,
- *      responseSize: res.bodyBytes.length,
- *      userAgent: req.headers['user-agent'],
- *      timeMillis: timer(),
- *    });
+ *     const timer = milliSecondTimer();
+ *     const res = await handler(req);
+ *     sendApilyticsMetrics({
+ *       apikey: "<your-api-key>",
+ *       path: req.path,
+ *       query: req.queryString,
+ *       method: req.method,
+ *       statusCode: res.statusCode,
+ *       requestSize: req.bodyBytes.length,
+ *       responseSize: res.bodyBytes.length,
+ *       userAgent: req.headers['user-agent'],
+ *       timeMillis: timer(),
+ *     });
  */
 export const sendApilyticsMetrics = ({
   apiKey,
@@ -72,48 +73,51 @@ export const sendApilyticsMetrics = ({
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
-  const data = JSON.stringify({
-    path,
-    query: query || undefined,
-    method,
-    statusCode: statusCode ?? undefined,
-    requestSize,
-    responseSize,
-    userAgent: userAgent || undefined,
-    timeMillis,
-  });
-  let apilyticsVersion = `${
-    apilyticsIntegration ?? 'apilytics-node-core'
-  }/${APILYTICS_VERSION};node/${process.versions.node}`;
-
-  if (integratedLibrary) {
-    apilyticsVersion += `;${integratedLibrary}`;
-  }
-
-  const options = {
-    hostname: 'www.apilytics.io',
-    port: 443,
-    path: '/api/v1/middleware',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': data.length,
-      'X-API-Key': apiKey,
-      'Apilytics-Version': apilyticsVersion,
-    },
-  };
-
-  new Promise((_, reject) => {
-    const req = https.request(options);
-    req.on('error', (err) => {
-      reject(err);
+  getCpuUsage().then((cpuUsage) => {
+    const data = JSON.stringify({
+      path,
+      query: query || undefined,
+      method,
+      statusCode: statusCode ?? undefined,
+      requestSize,
+      responseSize,
+      userAgent: userAgent || undefined,
+      cpuUsage,
+      timeMillis,
     });
-    req.write(data);
-    req.end();
-  }).catch((err) => {
-    if (process.env.NODE_ENV !== 'production') {
-      console.error(err);
+    let apilyticsVersion = `${
+      apilyticsIntegration ?? 'apilytics-node-core'
+    }/${APILYTICS_VERSION};node/${process.versions.node}`;
+
+    if (integratedLibrary) {
+      apilyticsVersion += `;${integratedLibrary}`;
     }
+
+    const options = {
+      hostname: 'www.apilytics.io',
+      port: 443,
+      path: '/api/v1/middleware',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': data.length,
+        'X-API-Key': apiKey,
+        'Apilytics-Version': apilyticsVersion,
+      },
+    };
+
+    new Promise((_, reject) => {
+      const req = https.request(options);
+      req.on('error', (err) => {
+        reject(err);
+      });
+      req.write(data);
+      req.end();
+    }).catch((err) => {
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(err);
+      }
+    });
   });
 };
 
@@ -123,6 +127,12 @@ export const sendApilyticsMetrics = ({
  *
  * @returns A function that can be called to stop the timer.
  *     That function's return value is the elapsed time.
+ *
+ * @example
+ *
+ *     const timer = milliSecondTimer();
+ *     // Run some code...
+ *     const elapsed = timer();
  */
 export const milliSecondTimer = (): (() => number) => {
   const startTimeNs = process.hrtime.bigint();
@@ -131,4 +141,43 @@ export const milliSecondTimer = (): (() => number) => {
     const endTimeNs = process.hrtime.bigint();
     return Number((endTimeNs - startTimeNs) / BigInt(1_000_000));
   };
+};
+
+const getCpuUsage = async (): Promise<number> => {
+  const cpusStart = os.cpus();
+
+  // There is no such thing as CPU usage percentage on a single point of time.
+  // At any discrete instant a CPU core is either fully used or fully idle.
+  // This is why we need to measure the usage over a known time interval. An
+  // interval of one second has been tested to provide quite consistent results.
+  await sleep(1000);
+
+  const cpusEnd = os.cpus();
+
+  const start = sumCpuTimes(cpusStart);
+  const end = sumCpuTimes(cpusEnd);
+
+  if (end.total === start.total) {
+    // Can happen when advancing timers during testing, this avoids `NaN` result.
+    return 0;
+  }
+
+  const idlePercentage = (end.idle - start.idle) / (end.total - start.total);
+  return 1 - idlePercentage;
+};
+
+const sleep = (ms: number): Promise<void> => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
+
+const sumCpuTimes = (cpus: os.CpuInfo[]): { idle: number; total: number } => {
+  let idle = 0;
+  let total = 0;
+  for (const cpu of cpus) {
+    for (const value of Object.values(cpu.times)) {
+      total += value;
+    }
+    idle += cpu.times.idle;
+  }
+  return { idle, total };
 };

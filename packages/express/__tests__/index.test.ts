@@ -10,6 +10,11 @@ import { apilyticsMiddleware } from '../src';
 const APILYTICS_VERSION = require('@apilytics/core/package.json').version;
 const EXPRESS_VERSION = require('express/package.json').version;
 
+const flushTimers = (): Promise<void> => {
+  jest.runAllTimers();
+  return new Promise(jest.requireActual('timers').setImmediate);
+};
+
 describe('apilyticsMiddleware()', () => {
   const apiKey = 'dummy-key';
 
@@ -22,6 +27,7 @@ describe('apilyticsMiddleware()', () => {
   let requestSpy: jest.SpyInstance;
 
   beforeEach(() => {
+    jest.useFakeTimers('legacy');
     requestSpy = jest
       .spyOn(https, 'request')
       .mockImplementation(
@@ -30,6 +36,7 @@ describe('apilyticsMiddleware()', () => {
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
     jest.restoreAllMocks();
   });
@@ -73,6 +80,8 @@ describe('apilyticsMiddleware()', () => {
     const response = await agent.get('/');
     expect(response.status).toEqual(200);
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
     expect(APILYTICS_VERSION).toBeTruthy();
@@ -102,6 +111,7 @@ describe('apilyticsMiddleware()', () => {
       method: 'GET',
       statusCode: 200,
       responseSize: 2,
+      cpuUsage: expect.any(Number),
       timeMillis: expect.any(Number),
     });
     expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
@@ -111,6 +121,8 @@ describe('apilyticsMiddleware()', () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/dummy/123/path/?param=foo&param2=bar');
     expect(response.status).toEqual(201);
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
@@ -139,6 +151,7 @@ describe('apilyticsMiddleware()', () => {
       statusCode: 201,
       requestSize: 0,
       responseSize: 7,
+      cpuUsage: expect.any(Number),
       timeMillis: expect.any(Number),
     });
   });
@@ -147,6 +160,8 @@ describe('apilyticsMiddleware()', () => {
     const agent = createAgent({ apiKey });
     const response = await agent.get('/dummy').set('User-Agent', 'some agent');
     expect(response.status).toEqual(200);
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
@@ -157,6 +172,8 @@ describe('apilyticsMiddleware()', () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/empty');
     expect(response.status).toEqual(200);
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
@@ -169,6 +186,8 @@ describe('apilyticsMiddleware()', () => {
     const response = await agent.post('/dummy').send({ hello: 'world' });
     expect(response.status).toEqual(201);
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
     const data = JSON.parse(clientRequestMock.write.mock.calls[0]);
     expect(data.requestSize).toEqual(17);
@@ -180,6 +199,8 @@ describe('apilyticsMiddleware()', () => {
     const response = await agent.get('/');
     expect(response.status).toEqual(200);
 
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(0);
   });
 
@@ -187,7 +208,10 @@ describe('apilyticsMiddleware()', () => {
     const agent = createAgent({ apiKey });
 
     const response = await agent.get('/error');
-    expect(response?.status).toEqual(500);
+
+    expect(response.status).toEqual(500);
+
+    await flushTimers();
 
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
@@ -197,6 +221,7 @@ describe('apilyticsMiddleware()', () => {
       method: 'GET',
       statusCode: 500,
       responseSize: expect.any(Number),
+      cpuUsage: expect.any(Number),
       timeMillis: expect.any(Number),
     });
   });
@@ -209,6 +234,9 @@ describe('apilyticsMiddleware()', () => {
     const response = await agent.get('/empty');
     numberSpy.mockRestore();
     expect(response.status).toEqual(200);
+
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
   });
 
@@ -225,6 +253,9 @@ describe('apilyticsMiddleware()', () => {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const response = await agent!.get('/dummy');
     expect(response.status).toEqual(200);
+
+    await flushTimers();
+
     expect(requestSpy).toHaveBeenCalledTimes(1);
 
     expect(requestSpy).toHaveBeenLastCalledWith(
