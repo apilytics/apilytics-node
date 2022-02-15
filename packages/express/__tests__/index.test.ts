@@ -1,3 +1,4 @@
+import fs from 'fs';
 import https from 'https';
 import type http from 'http';
 
@@ -28,11 +29,15 @@ describe('apilyticsMiddleware()', () => {
 
   beforeEach(() => {
     jest.useFakeTimers('legacy');
+
     requestSpy = jest
       .spyOn(https, 'request')
       .mockImplementation(
         () => clientRequestMock as unknown as http.ClientRequest,
       );
+
+    // @ts-ignore
+    jest.spyOn(fs.promises, 'readFile').mockImplementation(fs.readFileSync);
   });
 
   afterEach(() => {
@@ -112,6 +117,8 @@ describe('apilyticsMiddleware()', () => {
       statusCode: 200,
       responseSize: 2,
       cpuUsage: expect.any(Number),
+      memoryUsage: expect.any(Number),
+      memoryTotal: expect.any(Number),
       timeMillis: expect.any(Number),
     });
     expect(data['timeMillis']).toEqual(Math.trunc(data['timeMillis']));
@@ -152,6 +159,8 @@ describe('apilyticsMiddleware()', () => {
       requestSize: 0,
       responseSize: 7,
       cpuUsage: expect.any(Number),
+      memoryUsage: expect.any(Number),
+      memoryTotal: expect.any(Number),
       timeMillis: expect.any(Number),
     });
   });
@@ -222,6 +231,8 @@ describe('apilyticsMiddleware()', () => {
       statusCode: 500,
       responseSize: expect.any(Number),
       cpuUsage: expect.any(Number),
+      memoryUsage: expect.any(Number),
+      memoryTotal: expect.any(Number),
       timeMillis: expect.any(Number),
     });
   });
