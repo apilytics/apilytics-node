@@ -280,7 +280,10 @@ describe('withApilytics()', () => {
     const agent = createAgent({ apiKey });
     const numberSpy = jest
       .spyOn(global, 'Number')
-      .mockImplementation(() => NaN);
+      .mockImplementationOnce(() => {
+        numberSpy.mockRestore();
+        return NaN;
+      });
     const response = await agent.get('/empty');
     numberSpy.mockRestore();
     expect(response.status).toEqual(200);
