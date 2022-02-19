@@ -42,15 +42,13 @@ export const apilyticsMiddleware = (
         'http://_', // Cannot parse a relative URL, so make it absolute.
       );
 
-      const _requestSize = Number(req.headers['content-length']);
-      const requestSize = isNaN(_requestSize) ? undefined : _requestSize;
+      const requestSize = numberOrUndefined(req.headers['content-length']);
 
-      const _responseSize = Number(
+      const responseSize = numberOrUndefined(
         // @ts-ignore: `_contentLength` is not typed, but it does exist sometimes
         // when the header doesn't. Even if it doesn't this won't fail at runtime.
         res.getHeader('content-length') ?? res._contentLength,
       );
-      const responseSize = isNaN(_responseSize) ? undefined : _responseSize;
 
       sendApilyticsMetrics({
         apiKey,
@@ -70,4 +68,9 @@ export const apilyticsMiddleware = (
     });
     next();
   };
+};
+
+const numberOrUndefined = (value: unknown): number | undefined => {
+  const converted = Number(value);
+  return Number.isNaN(converted) ? undefined : converted;
 };
