@@ -199,7 +199,7 @@ const getAvailableMemory = async (): Promise<number> => {
     } catch (e) {
       // Prepare for everything and anything.
     }
-    const kBAvailable = meminfo?.match(/MemAvailable\D*(\d+)/)?.[1];
+    const kBAvailable = meminfo?.match(/MemAvailable:\s*(\d+)/)?.[1];
     if (kBAvailable) {
       return Number(kBAvailable) * 1024;
     }
