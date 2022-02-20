@@ -92,6 +92,7 @@ describe('apilyticsMiddleware()', () => {
     expect(APILYTICS_VERSION).toBeTruthy();
     expect(process.versions.node).toBeTruthy();
     expect(EXPRESS_VERSION).toBeTruthy();
+    expect(process.platform).toBeTruthy();
 
     expect(requestSpy).toHaveBeenLastCalledWith({
       hostname: 'www.apilytics.io',
@@ -102,7 +103,7 @@ describe('apilyticsMiddleware()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
-        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION}`,
+        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION};${process.platform}`,
       },
     });
 
@@ -142,7 +143,7 @@ describe('apilyticsMiddleware()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
-        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION}`,
+        'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};express/${EXPRESS_VERSION};${process.platform}`,
       },
     });
 
@@ -275,7 +276,7 @@ describe('apilyticsMiddleware()', () => {
     expect(requestSpy).toHaveBeenLastCalledWith(
       expect.objectContaining({
         headers: expect.objectContaining({
-          'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node}`,
+          'Apilytics-Version': `apilytics-node-express/${APILYTICS_VERSION};node/${process.versions.node};;${process.platform}`,
         }),
       }),
     );

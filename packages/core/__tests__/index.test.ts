@@ -86,6 +86,7 @@ describe('sendApilyticsMetrics()', () => {
 
     expect(APILYTICS_VERSION).toBeTruthy();
     expect(process.versions.node).toBeTruthy();
+    expect(process.platform).toBeTruthy();
 
     expect(requestSpy).toHaveBeenLastCalledWith({
       hostname: 'www.apilytics.io',
@@ -96,7 +97,7 @@ describe('sendApilyticsMetrics()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
-        'Apilytics-Version': `apilytics-node-core/${APILYTICS_VERSION};node/${process.versions.node}`,
+        'Apilytics-Version': `apilytics-node-core/${APILYTICS_VERSION};node/${process.versions.node};;${process.platform}`,
       },
     });
 
@@ -137,7 +138,7 @@ describe('sendApilyticsMetrics()', () => {
         'Content-Type': 'application/json',
         'Content-Length': expect.any(Number),
         'X-API-Key': apiKey,
-        'Apilytics-Version': `dummy/${APILYTICS_VERSION};node/${process.versions.node};lib/1.2.3`,
+        'Apilytics-Version': `dummy/${APILYTICS_VERSION};node/${process.versions.node};lib/1.2.3;${process.platform}`,
       },
     });
   });

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add platform name to sent Apilytics version info.
+
 ## [1.4.0] - 2022-02-15
 
 ### Added
