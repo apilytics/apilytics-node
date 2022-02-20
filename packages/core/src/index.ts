@@ -91,13 +91,12 @@ export const sendApilyticsMetrics = ({
         memoryTotal,
         timeMillis,
       });
-      let apilyticsVersion = `${
-        apilyticsIntegration ?? 'apilytics-node-core'
-      }/${APILYTICS_VERSION};node/${process.versions.node}`;
 
-      if (integratedLibrary) {
-        apilyticsVersion += `;${integratedLibrary}`;
-      }
+      const apilyticsVersion = `${
+        apilyticsIntegration ?? 'apilytics-node-core'
+      }/${APILYTICS_VERSION};node/${process.versions.node};${
+        integratedLibrary ?? ''
+      };${process.platform}`;
 
       const options = {
         hostname: 'www.apilytics.io',
