@@ -14,6 +14,7 @@ interface Params {
   requestSize?: number;
   responseSize?: number;
   userAgent?: string;
+  ip?: string;
   apilyticsIntegration?: string;
   integratedLibrary?: string;
 }
@@ -38,6 +39,8 @@ interface Params {
  * @param params.responseSize - Size of the sent HTTP response's body in bytes.
  * @param params.userAgent - Value of the `User-Agent` header from the user's
  *     HTTP request.
+ * @param params.ip - User's IP address (used for geolocation,
+ *     never stored nor sent to 3rd parties).
  * @param params.apilyticsIntegration - Name of the Apilytics integration that's
  *     calling this, e.g. 'apilytics-node-express'.
  *     No need to pass this when calling from user code.
@@ -49,6 +52,7 @@ interface Params {
  *
  *     const timer = milliSecondTimer();
  *     const res = await handler(req);
+ *
  *     sendApilyticsMetrics({
  *       apikey: "<your-api-key>",
  *       path: req.path,
@@ -58,6 +62,7 @@ interface Params {
  *       requestSize: req.bodyBytes.length,
  *       responseSize: res.bodyBytes.length,
  *       userAgent: req.headers['user-agent'],
+ *       ip: req.headers['x-forwarded-for']?.split(',')[0].trim(),
  *       timeMillis: timer(),
  *     });
  */
@@ -71,6 +76,7 @@ export const sendApilyticsMetrics = ({
   requestSize,
   responseSize,
   userAgent,
+  ip,
   apilyticsIntegration,
   integratedLibrary,
 }: Params): void => {
@@ -86,6 +92,7 @@ export const sendApilyticsMetrics = ({
         requestSize,
         responseSize,
         userAgent: userAgent || undefined,
+        ip: ip || undefined,
         cpuUsage,
         memoryUsage,
         memoryTotal,

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Send user's IP address with metrics. Used for visualization aggregate geolocation data.
+  The IP is never stored, and it is never sent to 3rd parties.
+
 ## [1.4.1] - 2022-02-20
 
 ### Added

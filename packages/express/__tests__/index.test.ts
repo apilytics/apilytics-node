@@ -178,6 +178,31 @@ describe('apilyticsMiddleware()', () => {
     expect(data.userAgent).toEqual('some agent');
   });
 
+  it('should send IP', async () => {
+    const agent = createAgent({ apiKey });
+    let response = await agent
+      .get('/dummy')
+      .set('X-Forwarded-For', '127.0.0.1');
+    expect(response.status).toEqual(200);
+
+    await flushTimers();
+
+    expect(requestSpy).toHaveBeenCalledTimes(1);
+    let data = JSON.parse(clientRequestMock.write.mock.calls[0]);
+    expect(data.ip).toEqual('127.0.0.1');
+
+    response = await agent
+      .get('/dummy')
+      .set('X-Forwarded-For', '127.0.0.2,127.0.0.3');
+    expect(response.status).toEqual(200);
+
+    await flushTimers();
+
+    expect(requestSpy).toHaveBeenCalledTimes(2);
+    data = JSON.parse(clientRequestMock.write.mock.calls[1]);
+    expect(data.ip).toEqual('127.0.0.2');
+  });
+
   it('should handle zero request and response sizes', async () => {
     const agent = createAgent({ apiKey });
     const response = await agent.post('/empty');

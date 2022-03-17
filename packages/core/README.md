@@ -44,6 +44,7 @@ const myApilyticsMiddleware = async (req, handler) => {
 
   const timer = milliSecondTimer();
   const res = await handler(req);
+
   sendApilyticsMetrics({
     apiKey,
     path: req.path,
@@ -53,6 +54,7 @@ const myApilyticsMiddleware = async (req, handler) => {
     requestSize: req.bodyBytes.length,
     responseSize: res.bodyBytes.length,
     userAgent: req.headers['user-agent'],
+    ip: req.headers['x-forwarded-for']?.split(',')[0].trim(),
     timeMillis: timer(),
   });
   return res;
