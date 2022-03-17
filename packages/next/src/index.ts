@@ -74,6 +74,10 @@ export const withApilytics = <T>(
         requestSize,
         responseSize,
         userAgent: req.headers['user-agent'],
+        // Type assertion since the value cannot be an array.
+        ip: (req.headers['x-forwarded-for'] as string | undefined)
+          ?.split(',')[0]
+          .trim(),
         timeMillis: timer(),
         apilyticsIntegration: 'apilytics-node-next',
         integratedLibrary: NEXT_VERSION ? `next/${NEXT_VERSION}` : undefined,
